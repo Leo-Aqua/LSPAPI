@@ -3,7 +3,7 @@ from LSP import LSPAPI
 user = ""  # LSP username
 password = ""  # LSP password
 
-key_file = "keyfile.key"  # The file where cookies are saved
+key_file = "keyfile.key"  # The file where cookies are saved (for fater second login)
 key_file_password = "supersecretpassword"  # encryption password for keyfile
 
 lsp_api = LSPAPI(user, password, key_file, key_file_password)
