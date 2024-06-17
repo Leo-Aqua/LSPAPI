@@ -3,4 +3,7 @@
 .vscode
 __pycache__
 keyfile.key
-usage.py
+usage*
+build
+dist
+LSPAPI.egg-info
