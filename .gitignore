@@ -1,0 +1,5 @@
+.pytest*
+.venv
+.vscode
+__pycache__
+keyfile.key
