@@ -1,4 +1,4 @@
-# LSAPI
+# LSPAPI
 Eine simple API um Daten aus [Leitstellenspiel](https://www.leitstellenspiel.de/) zu erhalten.
 
 ## Basic usage
