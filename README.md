@@ -28,7 +28,7 @@ finally:
 ## Installation
 
 Using pip:
-`pip install python-LSPAPI`
+`pip install pyLSPAPI`
 
 
 ## List of Functions
