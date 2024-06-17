@@ -6,5 +6,5 @@ keyfile.key
 usage*
 build
 dist
-pyLSPAPI.egg-info
+*egg-info
 secret*

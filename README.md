@@ -3,7 +3,7 @@ Eine simple API um Daten aus [Leitstellenspiel](https://www.leitstellenspiel.de/
 
 ## Basic usage
 ```python
-from py-LSPAPI import LSPAPI
+from python-LSPAPI import LSPAPI
 
 user = ""  # LSP username
 password = ""  # LSP password
@@ -28,7 +28,7 @@ finally:
 ## Installation
 
 Using pip:
-> Not available yet!
+`pip install python-LSPAPI`
 
 
 ## List of Functions
