@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name="LSPAPI",
+    name="pyLSPAPI",
     version="1.0.0",
     author="Leo Aqua",
     author_email="contact@leoaqua.de",
