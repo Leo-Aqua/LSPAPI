@@ -5,8 +5,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name="LSPpyAPI",
-    version="1.0.2",
+    name="pyLSPAPI",
+    version="1.0.3",
     author="Leo Aqua",
     author_email="contact@leoaqua.de",
     description="Python API for Leitstellenspiel",
