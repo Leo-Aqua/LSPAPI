@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="pyLSPAPI",
-    version="1.0.3",
+    version="1.0.4",
     author="Leo Aqua",
     author_email="contact@leoaqua.de",
     description="Python API for Leitstellenspiel",
