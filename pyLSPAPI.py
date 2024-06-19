@@ -19,6 +19,7 @@ class LSPAPI:
         self.key_file_password = key_file_password
 
     def start(self):
+        """start Initiates the session"""
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch()
         self.context = self.browser.new_context()
@@ -26,6 +27,7 @@ class LSPAPI:
         self.Login()
 
     def stop(self):
+        """stop Stops the session"""
         if self.page:
             self.page.close()
         if self.context:
@@ -36,6 +38,41 @@ class LSPAPI:
             self.playwright.stop()
 
     def Login(self):
+        """Login Logs in to your account
+
+        Raises:
+            Exception: Gives Error when Session isn't initialized
+            Exception: Gives Error when login credentials are wrong
+            Exception: Gives Error when decryption of the keyfile fails
+        """
+
+        def encrypt(self, key, text):
+            enc = []
+            for i in range(len(text)):
+                key_c = key[i % len(key)]
+                enc_c = chr((ord(text[i]) + ord(key_c)) % 256)
+                enc.append(enc_c)
+            return base64.urlsafe_b64encode("".join(enc).encode()).decode()
+
+        def decrypt(self, key, enc):
+            dec = []
+            enc = base64.urlsafe_b64decode(enc).decode()
+            for i in range(len(enc)):
+                key_c = key[i % len(key)]
+                dec_c = chr((256 + ord(enc[i]) - ord(key_c)) % 256)
+                dec.append(dec_c)
+            return "".join(dec)
+
+        def get_csrf_token(self):
+            # Evaluate JavaScript to get the content of the meta tag with name="csrf-token"
+            csrf_token = self.page.evaluate(
+                """() => {
+                const metaTag = document.querySelector('meta[name="csrf-token"]');
+                return metaTag ? metaTag.getAttribute('content') : null;
+            }"""
+            )
+            return csrf_token
+
         if not exists(self.key_file):
             if not self.page:
                 raise Exception("Playwright not started. Call start() before Login().")
@@ -66,7 +103,7 @@ class LSPAPI:
                     session_id = i["value"]
 
             # Extract CSRF token
-            csrf_token = self.get_csrf_token()
+            csrf_token = get_csrf_token()
 
             # generate, encrypt and write keyfile
             filestructure = {
@@ -77,7 +114,7 @@ class LSPAPI:
             fsb64 = base64.urlsafe_b64encode(
                 json.dumps(filestructure).encode()
             ).decode()
-            fsb_enc = self.encode(self.key_file_password, fsb64)
+            fsb_enc = encrypt(self.key_file_password, fsb64)
             with open(self.key_file, "x") as f:
                 f.write(fsb_enc)
                 f.close()
@@ -88,7 +125,7 @@ class LSPAPI:
                     f.close()
                 try:
                     fsb_dec = base64.urlsafe_b64decode(
-                        self.decode(self.key_file_password, fsb_enc)
+                        decrypt(self.key_file_password, fsb_enc)
                     )
                 except binascii.Error:
                     raise Exception("Keyfile decryption key invalid!")
@@ -106,40 +143,20 @@ class LSPAPI:
         self.req_session.cookies.update({"mc_unique_client_id": client_id})
         self.req_session.cookies.update({"_session_id": session_id})
 
-    def encode(self, key, text):
-        enc = []
-        for i in range(len(text)):
-            key_c = key[i % len(key)]
-            enc_c = chr((ord(text[i]) + ord(key_c)) % 256)
-            enc.append(enc_c)
-        return base64.urlsafe_b64encode("".join(enc).encode()).decode()
-
-    def decode(self, key, enc):
-        dec = []
-        enc = base64.urlsafe_b64decode(enc).decode()
-        for i in range(len(enc)):
-            key_c = key[i % len(key)]
-            dec_c = chr((256 + ord(enc[i]) - ord(key_c)) % 256)
-            dec.append(dec_c)
-        return "".join(dec)
-
-    def get_csrf_token(self):
-        # Evaluate JavaScript to get the content of the meta tag with name="csrf-token"
-        csrf_token = self.page.evaluate(
-            """() => {
-            const metaTag = document.querySelector('meta[name="csrf-token"]');
-            return metaTag ? metaTag.getAttribute('content') : null;
-        }"""
-        )
-        return csrf_token
-
     ###### ACTUAL API FUNCTIONALITY ######
 
     ## Thanks to Sebastian in this post https://forum.leitstellenspiel.de/index.php?thread/15856-apis/&postID=270314#post270314
     ## for the API routes and docstrings
 
     def vehicle_states(self):
-        """Gibt zurück, wie viel Fahrzeuge sich in welchem Status befinden. (JSON)"""
+        """vehicle_states Gibt zurück, wie viel Fahrzeuge sich in welchem Status befinden.
+
+        Raises:
+            Exception: Login fail
+
+        Returns:
+            json: vehicle states in JSON format
+        """
         response = self.req_session.get(
             "https://www.leitstellenspiel.de/api/vehicle_states"
         )
@@ -148,10 +165,17 @@ class LSPAPI:
                 "Could not Login! Are your cookies up to date? Is your password/username correct? Try deleting "
                 + self.key_file
             )
-        return response.text
+        return response.json()
 
     def user_stats(self):
-        """Gibt Informationen zu dem Spielers zurück (JSON)"""
+        """user_stats Gibt Informationen zu dem Spielers zurück (JSON)
+
+        Raises:
+            Exception: Login fail
+
+        Returns:
+            json: user stats in JSON format
+        """
         response = self.req_session.get("https://www.leitstellenspiel.de/api/credits")
         if "<!DOCTYPE html>" in response.text:
             raise Exception(
@@ -161,7 +185,14 @@ class LSPAPI:
         return response.json()
 
     def vehicles(self):
-        """Gibt die Fahrzeuge des Spielers zurück (JSON)"""
+        """Gibt die Fahrzeuge des Spielers zurück
+
+        Raises:
+            Exception: Login fail
+
+        Returns:
+            json: vehicles of user
+        """
         response = self.req_session.get("https://www.leitstellenspiel.de/api/vehicles")
         if "<!DOCTYPE html>" in response.text:
             raise Exception(
@@ -171,7 +202,14 @@ class LSPAPI:
         return response.json()
 
     def buildings(self):
-        """Gibt die Gebäude des Spielers zurück (JSON)"""
+        """Gibt die Gebäude des Spielers zurück 
+
+        Raises:
+            Exception: Login fail
+
+        Returns:
+            json: Buildings of user
+        """
         response = self.req_session.get("https://www.leitstellenspiel.de/api/buildings")
         if "<!DOCTYPE html>" in response.text:
             raise Exception(
@@ -183,7 +221,7 @@ class LSPAPI:
 
 # Just foer testing. Ignore this.
 if __name__ == "__main__":
-    lsp_api = LSPAPI("myuser", "mypassword")
+    lsp_api = LSPAPI("myuser", "mypassword", "keyfile.key", "supersecretpassword")
     lsp_api.start()
     try:
         lsp = lsp_api.Login()
